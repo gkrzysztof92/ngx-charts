@@ -98,6 +98,11 @@ export class GaugeComponent extends BaseChartComponent implements AfterViewInit 
   // Specify margins
   @Input() margin: any[];
 
+  // Specify arc width
+  @Input() widthArcScale: number = 1;
+  // Specyfi arc corner radius
+  @Input() cornerArcRadius: number;
+
   @Output() activate: EventEmitter<any> = new EventEmitter();
   @Output() deactivate: EventEmitter<any> = new EventEmitter();
 
@@ -113,12 +118,12 @@ export class GaugeComponent extends BaseChartComponent implements AfterViewInit 
   colors: ColorHelper;
   transform: string;
 
-  outerRadius: number;
+  outerRadius: number = 100;
   textRadius: number; // max available radius for the text
-  resizeScale: number = 1;
+  resizeScale: number = 100;
   rotation: string = '';
   textTransform: string = 'scale(1, 1)';
-  cornerRadius: number = 10;
+  cornerRadius: number = 200;
   arcs: any[];
   displayValue: string;
   legendOptions: any;
@@ -161,13 +166,12 @@ export class GaugeComponent extends BaseChartComponent implements AfterViewInit 
     this.displayValue = this.getDisplayValue();
 
     this.outerRadius = Math.min(this.dims.width, this.dims.height) / 2;
-
     this.arcs = this.getArcs();
 
     this.setColors();
     this.legendOptions = this.getLegendOptions();
 
-    const xOffset = this.margin[3] + this.dims.width / 2;
+    const xOffset = (this.margin[3] + this.dims.width / 2);
     const yOffset = this.margin[0] + this.dims.height / 2;
 
     this.transform = `translate(${ xOffset }, ${ yOffset })`;
@@ -180,10 +184,14 @@ export class GaugeComponent extends BaseChartComponent implements AfterViewInit 
 
     const availableRadius = this.outerRadius * 0.7;
 
-    const radiusPerArc = Math.min(availableRadius / this.results.length, 10);
+    const radiusPerArc = Math.min(availableRadius / this.results.length, 10) * this.widthArcScale;
     const arcWidth = radiusPerArc * 0.7;
     this.textRadius = this.outerRadius - this.results.length * radiusPerArc;
-    this.cornerRadius = Math.floor(arcWidth / 2);
+    if (this.cornerArcRadius) {
+      this.cornerRadius = this.cornerArcRadius;
+    } else {
+      this.cornerRadius = Math.floor(arcWidth / 2) / this.widthArcScale;
+    }
 
     let i = 0;
     for (const d of this.results) {
